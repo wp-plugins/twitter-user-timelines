@@ -70,7 +70,7 @@ class Twitter_User_Timeline extends WP_Widget
             $theme = ( !empty( $instance['theme'] ) ) ? $instance['theme'] : 'light';
             $count = ( !empty( $instance['count'] ) ) ? $instance['count'] : 5;
             $username = ( !empty( $instance['username'] ) ) ? $instance['username'] : 'WordPress';
-            $overrides = ( !empty( $instance['overrides'] ) ) ? $instance['overrides'] : array();
+            $override = ( !empty( $instance['override'] ) ) ? $instance['override'] : array();
             $twitter_field = ( !empty( $instance['twitter_field'] ) ) ? $instance['twitter_field'] : '';
 
             // Widget type options
@@ -98,7 +98,7 @@ class Twitter_User_Timeline extends WP_Widget
                 </p>
 
                 <p class='tut-overide'>
-                    <label for="<?php echo $this->get_field_name( 'overrides' ); ?>"><?php _e( 'Show Author Tweets:', 'twitter-user-timelines' ) ?> </label><br>
+                    <label for="<?php echo $this->get_field_name( 'override' ); ?>"><?php _e( 'Show Author Tweets:', 'twitter-user-timelines' ) ?> </label><br>
                     <?php
                         $i=0;
                         foreach( $override_options as $value => $name ) :
@@ -276,6 +276,19 @@ class Twitter_User_Timeline extends WP_Widget
         echo $args['after_widget'];
     }
 
+    /**
+     * Determine Twitter Screen Name
+     * 
+     * Determines the Twitter user to show tweets for. This is a
+     * factor of the given default username, the overrides and
+     * the type of page we are currently on .
+     * 
+     * @param array $instance The widget details
+     * @return string Twitter screen name
+     * @author Daniel Pataki
+     * @since 1.0.0
+     * 
+     */
     function determine_screen_name( $instance ) {
         $screen_name = empty( $instance['username'] ) ? 'WordPress' : $instance['username'];
 
