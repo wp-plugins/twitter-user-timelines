@@ -117,9 +117,9 @@ class Twitter_User_Timeline extends WP_Widget
                 <p>
                     <label for="<?php echo $this->get_field_name( 'theme' ); ?>"><?php _e( 'Theme:', 'twitter-user-timelines' ) ?> </label><br>
 
-                    <input <?php checked( $theme, 'light' ) ?> class="widefat" id="<?php echo $this->get_field_id( 'theme' ); ?>_light" name="<?php echo $this->get_field_name( 'theme' ); ?>" type="radio" value='light' /> <label for="<?php echo $this->get_field_id( 'theme' ); ?>_light"> Light </label><br>
+                    <input <?php checked( $theme, 'light' ) ?> class="widefat" id="<?php echo $this->get_field_id( 'theme' ); ?>_light" name="<?php echo $this->get_field_name( 'theme' ); ?>" type="radio" value='light' /> <label for="<?php echo $this->get_field_id( 'theme' ); ?>_light"> <?php _e( 'Light', 'twitter-user-timelines' ) ?></label><br>
 
-                    <input <?php checked( $theme, 'dark' ) ?> class="widefat" id="<?php echo $this->get_field_id( 'theme' ); ?>_dark" name="<?php echo $this->get_field_name( 'theme' ); ?>" type="radio" value='dark' /> <label for="<?php echo $this->get_field_id( 'theme' ); ?>_dark"> Dark </label>
+                    <input <?php checked( $theme, 'dark' ) ?> class="widefat" id="<?php echo $this->get_field_id( 'theme' ); ?>_dark" name="<?php echo $this->get_field_name( 'theme' ); ?>" type="radio" value='dark' /> <label for="<?php echo $this->get_field_id( 'theme' ); ?>_dark"> <?php _e( 'Dark', 'twitter-user-timelines' ) ?> </label>
 
                 </p>
 
@@ -149,6 +149,10 @@ class Twitter_User_Timeline extends WP_Widget
      *
      */
     public function update( $new_instance, $old_instance ) {
+        if( empty( $new_instance['override'] ) ) {
+            $new_instance['override'] = array();
+        }
+
         $tweets = $this->retrieve_tweets( $new_instance['username'], $new_instance['count'] );
         delete_transient( 'tut_tweets_' . $new_instance['username'] );
         set_transient( 'tut_tweets_' . $new_instance['username'], $tweets, HOUR_IN_SECONDS );
@@ -278,16 +282,16 @@ class Twitter_User_Timeline extends WP_Widget
 
     /**
      * Determine Twitter Screen Name
-     * 
+     *
      * Determines the Twitter user to show tweets for. This is a
      * factor of the given default username, the overrides and
      * the type of page we are currently on .
-     * 
+     *
      * @param array $instance The widget details
      * @return string Twitter screen name
      * @author Daniel Pataki
      * @since 1.0.0
-     * 
+     *
      */
     function determine_screen_name( $instance ) {
         $screen_name = empty( $instance['username'] ) ? 'WordPress' : $instance['username'];
@@ -316,6 +320,9 @@ class Twitter_User_Timeline extends WP_Widget
             }
         }
 
+        if( substr( $screen_name, 0, 1 ) == '@' ) {
+            $screen_name = substr( $screen_name, 1 );
+        }
 
         return $screen_name;
     }
@@ -335,16 +342,22 @@ class Twitter_User_Timeline extends WP_Widget
     function format_tweet_text( $tweet ) {
         $text = $tweet['text'];
 
-        foreach( $tweet['entities']['urls'] as $url ) {
-            $tweet['text'] = str_replace( $url['url'], '<a href="' . $url['url'] . '">' . $url['url'] . '</a>', $tweet['text'] );
+        if( !empty( $tweet['entities']['urls'] ) ) {
+            foreach( $tweet['entities']['urls'] as $url ) {
+                $tweet['text'] = str_replace( $url['url'], '<a href="' . $url['url'] . '">' . $url['url'] . '</a>', $tweet['text'] );
+            }
         }
 
-        foreach( $tweet['entities']['user_mentions'] as $mention ) {
-            $tweet['text'] = str_replace( '@' . $mention['screen_name'], '<a href="http://twitter.com/' . $mention['screen_name'] . '">@' . $mention['screen_name'] . '</a>', $tweet['text'] );
+        if( !empty( $tweet['entities']['user_mentions'] ) ) {
+            foreach( $tweet['entities']['user_mentions'] as $mention ) {
+                $tweet['text'] = str_replace( '@' . $mention['screen_name'], '<a href="http://twitter.com/' . $mention['screen_name'] . '">@' . $mention['screen_name'] . '</a>', $tweet['text'] );
+            }
         }
 
-        foreach( $tweet['entities']['hashtags'] as $hashtag ) {
-            $tweet['text'] = str_replace( '#' . $hashtag['text'], '<a href="https://twitter.com/hashtag/' . $hashtag['text'] . '">#' . $hashtag['text'] . '</a>', $tweet['text'] );
+        if( !empty( $tweet['entities']['hashtags'] ) ) {
+            foreach( $tweet['entities']['hashtags'] as $hashtag ) {
+                $tweet['text'] = str_replace( '#' . $hashtag['text'], '<a href="https://twitter.com/hashtag/' . $hashtag['text'] . '">#' . $hashtag['text'] . '</a>', $tweet['text'] );
+            }
         }
 
         return $tweet['text'];
